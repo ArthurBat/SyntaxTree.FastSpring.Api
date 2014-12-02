@@ -40,7 +40,7 @@ namespace SyntaxTree.FastSpring.Api
 			return ParseResponse<Coupon>(request.GetResponse());
 		}
 
-		public Order Order(string reference)
+		public Order GetOrder(string reference)
 		{
 			if (reference == null)
 				throw new ArgumentNullException("reference");
@@ -51,7 +51,7 @@ namespace SyntaxTree.FastSpring.Api
 			return ParseResponse<Order>(request.GetResponse());
 		}
 
-		public OrderSearchResult Orders(string query)
+		public OrderSearchResult GetOrders(string query)
 		{
 			if (query == null)
 				throw new ArgumentNullException("query");
@@ -61,6 +61,29 @@ namespace SyntaxTree.FastSpring.Api
 			var request = Request("GET", "/orders/search?query=" + Uri.EscapeDataString(query));
 			return ParseResponse<OrderSearchResult>(request.GetResponse());
 		}
+
+        public Subscription GetSubscription(string reference)
+        {
+            if (reference == null)
+                throw new ArgumentNullException("reference");
+            if (reference.Length == 0)
+                throw new ArgumentException("Reference is empty.", "reference");
+
+            var request = Request("GET", "/subscription/" + reference);
+            return ParseResponse<Subscription>(request.GetResponse());
+        }
+
+        public bool CancelSubscription(string reference)
+        {
+            if (reference == null)
+                throw new ArgumentNullException("reference");
+            if (reference.Length == 0)
+                throw new ArgumentException("Reference is empty.", "reference");
+
+            var request = Request("DELETE", "/subscription/" + reference);
+            var httpResponse = (HttpWebResponse) request.GetResponse();
+            return httpResponse.StatusCode == HttpStatusCode.OK;
+        }
 
 		private WebRequest Request(string method, string uri)
 		{

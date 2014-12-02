@@ -13,7 +13,7 @@ namespace SyntaxTree.FastSpring.Api
 	{
 		public CompanyStore(StoreCredential credential) {}
 		
-		public Order Order(string reference) {}
+		public Order GetOrder(string reference) {}
 	}
 
 	public sealed class StoreCredential
@@ -42,14 +42,12 @@ public class Program
 				username: "api-user",
 				password: "xxx"));
 
-		var order = store.Order(reference: "SYNXXXXXX-XXXX-XXXXX");
+		var order = store.GetOrder(reference: "SYNXXXXXX-XXXX-XXXXX");
 
 		Console.WriteLine(order.Customer.FirstName);
 	}
 }
 ```
-
-We currently only support the order and coupon API, not the subscription one.
 
 All calls made to the FastSpring server are currently made synchronous and blocking.
 Wrap your calls into a Task if you want them to to be asynchronous.

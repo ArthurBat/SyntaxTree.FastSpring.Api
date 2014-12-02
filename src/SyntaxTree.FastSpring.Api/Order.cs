@@ -3,7 +3,7 @@ using System.Xml.Serialization;
 
 namespace SyntaxTree.FastSpring.Api
 {
-	[XmlRoot(ElementName = "order", IsNullable = false, Namespace = "")]
+    [XmlRoot(ElementName = "order", IsNullable = false, Namespace = "")]
 	public sealed class Order : ShortOrder
 	{
 		[XmlElement("due")]
