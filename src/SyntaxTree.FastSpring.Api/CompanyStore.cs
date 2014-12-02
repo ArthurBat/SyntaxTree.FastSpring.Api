@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Text;
 using System.Xml.Serialization;
@@ -17,17 +18,29 @@ namespace SyntaxTree.FastSpring.Api
 			_credential = credential;
 		}
 
-		private static T ParseResponse<T>(WebResponse response)
-		{
-			if (response == null)
-				throw new InvalidOperationException("No response.");
+        private static T DeserializeResponse<T>(WebResponse response)
+        {
+            if (response == null)
+                throw new InvalidOperationException("No response.");
 
-			var responseStream = response.GetResponseStream();
-			if (responseStream == null)
-				throw new InvalidOperationException("Unable to acquire response stream.");
+            var responseStream = response.GetResponseStream();
+            if (responseStream == null)
+                throw new InvalidOperationException("Unable to acquire response stream.");
 
-			return (T) new XmlSerializer(typeof (T)).Deserialize(responseStream);
-		}
+            return (T)new XmlSerializer(typeof(T)).Deserialize(responseStream);
+        }
+
+        private static string SerializeRequest<T>(T request)
+        {
+            if (request == null)
+                throw new InvalidOperationException("No request.");
+
+            using (var writer = new StringWriter())
+            {
+                new XmlSerializer(typeof (T)).Serialize(writer, request);
+                return writer.ToString();
+            }
+        }
 
 		public Coupon GenerateCoupon(string prefix)
 		{
@@ -37,7 +50,7 @@ namespace SyntaxTree.FastSpring.Api
 				throw new ArgumentException("Prefix is empty.", "prefix");
 
 			var request = Request("POST", string.Concat("/coupon/", prefix, "/generate"));
-			return ParseResponse<Coupon>(request.GetResponse());
+			return DeserializeResponse<Coupon>(request.GetResponse());
 		}
 
 		public Order GetOrder(string reference)
@@ -48,7 +61,7 @@ namespace SyntaxTree.FastSpring.Api
 				throw new ArgumentException("Reference is empty.", "reference");
 
 			var request = Request("GET", "/order/" + reference);
-			return ParseResponse<Order>(request.GetResponse());
+			return DeserializeResponse<Order>(request.GetResponse());
 		}
 
 		public OrderSearchResult GetOrders(string query)
@@ -59,7 +72,7 @@ namespace SyntaxTree.FastSpring.Api
 				throw new ArgumentException("Query is empty.", "query");
 
 			var request = Request("GET", "/orders/search?query=" + Uri.EscapeDataString(query));
-			return ParseResponse<OrderSearchResult>(request.GetResponse());
+			return DeserializeResponse<OrderSearchResult>(request.GetResponse());
 		}
 
         public Subscription GetSubscription(string reference)
@@ -70,7 +83,30 @@ namespace SyntaxTree.FastSpring.Api
                 throw new ArgumentException("Reference is empty.", "reference");
 
             var request = Request("GET", "/subscription/" + reference);
-            return ParseResponse<Subscription>(request.GetResponse());
+            return DeserializeResponse<Subscription>(request.GetResponse());
+        }
+
+        public bool UpdateSubscription(string reference, SubscriptionUpdate subscriptionUpdate)
+        {
+            if (reference == null)
+                throw new ArgumentNullException("reference");
+            if (reference.Length == 0)
+                throw new ArgumentException("Reference is empty.", "reference");
+
+            var request = Request("PUT", "/subscription/" + reference, SerializeRequest(subscriptionUpdate));
+            var httpResponse = (HttpWebResponse)request.GetResponse();
+            return httpResponse.StatusCode == HttpStatusCode.OK;
+
+            /*
+             * TODO:
+             
+                200: OK  on success. The response contains updated subscription data. See Get Subscription.
+                403: Forbidden  if un-canceling isn't possible anymore.
+                400: Bad Request  if the request was invalid. The response will contain a detailed description.
+                422: Unprocessable entity  if productPath was unknown.
+                412: Precondition Failed [error_code]  if it wasn't able to perform the update. Error codes: not-changeable, discount-zero-or-less, end-date-not-supported, end-date-too-early, next-period-date-empty, next-period-date-not-supported-on-demand, next-period-date-too-early, proration-not-supported-on-demand, proration-not-supported-not-started, proration-not-supported-refund-period-expired, quantity-zero-or-less, invalid-coupon, invalid-subtotal.
+                500: Internal Server Error  if an unexpected server error happened.
+             */
         }
 
         public bool CancelSubscription(string reference)
@@ -85,12 +121,22 @@ namespace SyntaxTree.FastSpring.Api
             return httpResponse.StatusCode == HttpStatusCode.OK;
         }
 
-		private WebRequest Request(string method, string uri)
+		private WebRequest Request(string method, string uri, string body = null)
 		{
 			var request = WebRequest.Create(StoreUri(uri));
 			request.ContentType = "application/xml";
 			request.Method = method;
 			request.Headers["Authorization"] = AuthorizationHeader();
+
+		    if (body != null)
+		    {
+                ASCIIEncoding encoding = new ASCIIEncoding();
+                byte[] bodyBytes = encoding.GetBytes(body);
+
+		        request.ContentLength = bodyBytes.Length;
+                request.GetRequestStream().Write(bodyBytes, 0, bodyBytes.Length);
+		    }
+
 			return request;
 		}
 

@@ -53,6 +53,7 @@
     <Compile Include="Subscription.cs" />
     <Compile Include="SubscriptionStatus.cs" />
     <Compile Include="SubscriptionStatusReason.cs" />
+    <Compile Include="SubscriptionUpdate.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="SyntaxTree.FastSpring.Api.nuspec" />
