@@ -7,13 +7,13 @@ namespace SyntaxTree.FastSpring.Api
     public sealed class Subscription
     {
         [XmlElement("status")]
-        public Status Status { get; set; }
+        public SubscriptionStatus OrderStatus { get; set; }
 
         [XmlElement("statusChanged")]
         public DateTime StatusChanged { get; set; }
 
         [XmlElement("statusReason")]
-        public string StatusReason { get; set; }
+        public SubscriptionStatusReason StatusReason { get; set; }
 
         [XmlElement("cancelable")]
         public bool Cancelable { get; set; }

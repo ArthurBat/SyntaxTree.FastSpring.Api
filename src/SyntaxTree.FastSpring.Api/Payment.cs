@@ -6,7 +6,7 @@ namespace SyntaxTree.FastSpring.Api
 	public sealed class Payment
 	{
 		[XmlElement("status")]
-		public Status Status { get; set; }
+		public OrderStatus OrderStatus { get; set; }
 
 		[XmlElement("statusChanged")]
 		public DateTime StatusChanged { get; set; }

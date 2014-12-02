@@ -10,7 +10,7 @@ namespace SyntaxTree.FastSpring.Api
 		public string Reference { get; set; }
 
 		[XmlElement("status")]
-		public Status Status { get; set; }
+		public OrderStatus OrderStatus { get; set; }
 
 		[XmlElement("statusChanged")]
 		public DateTime StatusChanged { get; set; }

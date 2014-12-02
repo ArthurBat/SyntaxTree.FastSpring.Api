@@ -2,7 +2,7 @@ using System.Xml.Serialization;
 
 namespace SyntaxTree.FastSpring.Api
 {
-	public enum Status
+    public enum OrderStatus
 	{
 		[XmlEnum("open")]
 		Open,
