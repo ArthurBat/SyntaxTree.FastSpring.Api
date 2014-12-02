@@ -37,8 +37,11 @@ namespace SyntaxTree.FastSpring.Api
 
             using (var writer = new StringWriter())
             {
-                new XmlSerializer(typeof (T)).Serialize(writer, request);
-                return writer.ToString();
+                new XmlSerializer(typeof(T), "").Serialize(writer, request);
+                return writer.ToString()
+                    .Replace("<?xml version=\"1.0\" encoding=\"utf-16\"?>", "")
+                    .Replace(" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"", "")
+                    .Replace("\r\n", "");
             }
         }
 
@@ -94,8 +97,23 @@ namespace SyntaxTree.FastSpring.Api
                 throw new ArgumentException("Reference is empty.", "reference");
 
             var request = Request("PUT", "/subscription/" + reference, SerializeRequest(subscriptionUpdate));
-            var httpResponse = (HttpWebResponse)request.GetResponse();
-            return httpResponse.StatusCode == HttpStatusCode.OK;
+            try
+            {
+                using (var response = (HttpWebResponse) request.GetResponse())
+                {
+                    return response.StatusCode == HttpStatusCode.OK;
+                }
+            }
+            catch (WebException webEx)
+            {
+                using (var response = (HttpWebResponse)webEx.Response)
+                {
+                    using (var reader = new StreamReader(response.GetResponseStream()))
+                    {
+                        throw new Exception(reader.ReadToEnd());
+                    }
+                }
+            }
 
             /*
              * TODO:
@@ -117,8 +135,23 @@ namespace SyntaxTree.FastSpring.Api
                 throw new ArgumentException("Reference is empty.", "reference");
 
             var request = Request("DELETE", "/subscription/" + reference);
-            var httpResponse = (HttpWebResponse) request.GetResponse();
-            return httpResponse.StatusCode == HttpStatusCode.OK;
+            try
+            {
+                using (var response = (HttpWebResponse)request.GetResponse())
+                {
+                    return response.StatusCode == HttpStatusCode.OK;
+                }
+            }
+            catch (WebException webEx)
+            {
+                using (var response = (HttpWebResponse)webEx.Response)
+                {
+                    using (var reader = new StreamReader(response.GetResponseStream()))
+                    {
+                        throw new Exception(reader.ReadToEnd());
+                    }
+                }
+            }
         }
 
 		private WebRequest Request(string method, string uri, string body = null)
