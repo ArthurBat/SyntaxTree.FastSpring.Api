@@ -9,3 +9,4 @@ obj
 **/test-results/*
 *Resharper*
 test
+release/

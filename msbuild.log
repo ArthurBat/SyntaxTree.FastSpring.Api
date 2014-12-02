@@ -1,0 +1,17 @@
+Build started 2/12/2014 13:40:53.
+     1>Project "D:\Projects\Git\SyntaxTree.FastSpring.Api\src\SyntaxTree.FastSpring.Api.sln" on node 1 (default targets).
+     1>ValidateSolutionConfiguration:
+         Building solution configuration "Release|Any CPU".
+     1>Project "D:\Projects\Git\SyntaxTree.FastSpring.Api\src\SyntaxTree.FastSpring.Api.sln" (1) is building "D:\Projects\Git\SyntaxTree.FastSpring.Api\src\SyntaxTree.FastSpring.Api\SyntaxTree.FastSpring.Api.csproj" (2) on node 1 (default targets).
+     2>CoreCompile:
+       Skipping target "CoreCompile" because all output files are up-to-date with respect to the input files.
+       CopyFilesToOutputDirectory:
+         SyntaxTree.FastSpring.Api -> D:\Projects\Git\SyntaxTree.FastSpring.Api\src\SyntaxTree.FastSpring.Api\bin\Release\SyntaxTree.FastSpring.Api.dll
+     2>Done Building Project "D:\Projects\Git\SyntaxTree.FastSpring.Api\src\SyntaxTree.FastSpring.Api\SyntaxTree.FastSpring.Api.csproj" (default targets).
+     1>Done Building Project "D:\Projects\Git\SyntaxTree.FastSpring.Api\src\SyntaxTree.FastSpring.Api.sln" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.60

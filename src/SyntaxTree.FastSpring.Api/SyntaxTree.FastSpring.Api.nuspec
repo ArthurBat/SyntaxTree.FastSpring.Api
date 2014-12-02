@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <licenseUrl>https://raw.githubusercontent.com/syntaxtree/SyntaxTree.FastSpring.Api/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/syntaxtree/SyntaxTree.FastSpring.Api/</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>FastSpring payments API client for .NET</description>
+    <copyright>Copyright © SyntaxTree 2012</copyright>
+    <tags>fastspring syntaxtree myget payments credit card paypal subscriptions</tags>
+  </metadata>
+</package>
