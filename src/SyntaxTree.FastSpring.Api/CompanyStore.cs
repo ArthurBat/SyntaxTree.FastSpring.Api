@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml.Serialization;
 
 namespace SyntaxTree.FastSpring.Api
@@ -45,63 +46,112 @@ namespace SyntaxTree.FastSpring.Api
             }
         }
 
-		public Coupon GenerateCoupon(string prefix)
+		public async Task<Coupon> GenerateCoupon(string prefix)
 		{
 			if (prefix == null)
 				throw new ArgumentNullException("prefix");
 			if (prefix.Length == 0)
 				throw new ArgumentException("Prefix is empty.", "prefix");
 
-			var request = Request("POST", string.Concat("/coupon/", prefix, "/generate"));
-			return DeserializeResponse<Coupon>(request.GetResponse());
+			var request = await Request("POST", string.Concat("/coupon/", prefix, "/generate"));
+			return DeserializeResponse<Coupon>(await request.GetResponseAsync());
 		}
 
-		public Order GetOrder(string reference)
+		public async Task<Order> GetOrder(string reference)
 		{
 			if (reference == null)
 				throw new ArgumentNullException("reference");
 			if (reference.Length == 0)
 				throw new ArgumentException("Reference is empty.", "reference");
 
-			var request = Request("GET", "/order/" + reference);
-			return DeserializeResponse<Order>(request.GetResponse());
+            var request = await Request("GET", "/order/" + reference);
+            return DeserializeResponse<Order>(await request.GetResponseAsync());
 		}
 
-		public OrderSearchResult GetOrders(string query)
+		public async Task<OrderSearchResult> GetOrders(string query)
 		{
 			if (query == null)
 				throw new ArgumentNullException("query");
 			if (query.Length == 0)
 				throw new ArgumentException("Query is empty.", "query");
 
-			var request = Request("GET", "/orders/search?query=" + Uri.EscapeDataString(query));
-			return DeserializeResponse<OrderSearchResult>(request.GetResponse());
+            var request = await Request("GET", "/orders/search?query=" + Uri.EscapeDataString(query));
+            return DeserializeResponse<OrderSearchResult>(await request.GetResponseAsync());
 		}
 
-        public Subscription GetSubscription(string reference)
+        public async Task<Subscription> GetSubscription(string reference)
         {
             if (reference == null)
                 throw new ArgumentNullException("reference");
             if (reference.Length == 0)
                 throw new ArgumentException("Reference is empty.", "reference");
 
-            var request = Request("GET", "/subscription/" + reference);
-            return DeserializeResponse<Subscription>(request.GetResponse());
+            var request = await Request("GET", "/subscription/" + reference);
+            return DeserializeResponse<Subscription>(await request.GetResponseAsync());
         }
 
-        public bool UpdateSubscription(string reference, SubscriptionUpdate subscriptionUpdate)
+        public async Task UpdateSubscription(string reference, SubscriptionUpdate subscriptionUpdate)
         {
             if (reference == null)
                 throw new ArgumentNullException("reference");
             if (reference.Length == 0)
                 throw new ArgumentException("Reference is empty.", "reference");
 
-            var request = Request("PUT", "/subscription/" + reference, SerializeRequest(subscriptionUpdate));
+            var request = await Request("PUT", "/subscription/" + reference, SerializeRequest(subscriptionUpdate));
             try
             {
-                using (var response = (HttpWebResponse) request.GetResponse())
+                using (var response = (HttpWebResponse)await request.GetResponseAsync())
                 {
-                    return response.StatusCode == HttpStatusCode.OK;
+                    if (!response.StatusCode.ToString().StartsWith("2"))
+                    {
+                        throw new Exception(response.StatusDescription);
+                    }
+                }
+            }
+            catch (WebException webEx)
+            {
+                using (var response = (HttpWebResponse)webEx.Response)
+                {
+                    string errorData = "";
+                    using (var reader = new StreamReader(response.GetResponseStream()))
+                    {
+                        errorData = reader.ReadToEnd();
+                    }
+
+                    switch ((int)response.StatusCode)
+                    {
+                        case 400:
+                            throw new Exception(string.Format("Invalid request. {0}", errorData));
+                        case 403:
+                            throw new Exception("Un-canceling the subscription is not possible anymore.");
+                        case 412:
+                            throw new Exception(string.Format("Precondition failed. {0} {1}", response.StatusDescription, errorData));
+                        case 422:
+                            throw new Exception("Product path is unknown.");
+                        case 500:
+                            throw new Exception("Unknown error.");
+                    }
+                    
+                }
+            }
+        }
+
+        public async Task CancelSubscription(string reference)
+        {
+            if (reference == null)
+                throw new ArgumentNullException("reference");
+            if (reference.Length == 0)
+                throw new ArgumentException("Reference is empty.", "reference");
+
+            var request = await Request("DELETE", "/subscription/" + reference);
+            try
+            {
+                using (var response = (HttpWebResponse)await request.GetResponseAsync())
+                {
+                    if (!response.StatusCode.ToString().StartsWith("2"))
+                    {
+                        throw new Exception(response.StatusDescription);
+                    }
                 }
             }
             catch (WebException webEx)
@@ -114,47 +164,9 @@ namespace SyntaxTree.FastSpring.Api
                     }
                 }
             }
-
-            /*
-             * TODO:
-             
-                200: OK  on success. The response contains updated subscription data. See Get Subscription.
-                403: Forbidden  if un-canceling isn't possible anymore.
-                400: Bad Request  if the request was invalid. The response will contain a detailed description.
-                422: Unprocessable entity  if productPath was unknown.
-                412: Precondition Failed [error_code]  if it wasn't able to perform the update. Error codes: not-changeable, discount-zero-or-less, end-date-not-supported, end-date-too-early, next-period-date-empty, next-period-date-not-supported-on-demand, next-period-date-too-early, proration-not-supported-on-demand, proration-not-supported-not-started, proration-not-supported-refund-period-expired, quantity-zero-or-less, invalid-coupon, invalid-subtotal.
-                500: Internal Server Error  if an unexpected server error happened.
-             */
         }
 
-        public bool CancelSubscription(string reference)
-        {
-            if (reference == null)
-                throw new ArgumentNullException("reference");
-            if (reference.Length == 0)
-                throw new ArgumentException("Reference is empty.", "reference");
-
-            var request = Request("DELETE", "/subscription/" + reference);
-            try
-            {
-                using (var response = (HttpWebResponse)request.GetResponse())
-                {
-                    return response.StatusCode == HttpStatusCode.OK;
-                }
-            }
-            catch (WebException webEx)
-            {
-                using (var response = (HttpWebResponse)webEx.Response)
-                {
-                    using (var reader = new StreamReader(response.GetResponseStream()))
-                    {
-                        throw new Exception(reader.ReadToEnd());
-                    }
-                }
-            }
-        }
-
-		private WebRequest Request(string method, string uri, string body = null)
+		private async Task<WebRequest> Request(string method, string uri, string body = null)
 		{
 			var request = WebRequest.Create(StoreUri(uri));
 			request.ContentType = "application/xml";
@@ -167,7 +179,8 @@ namespace SyntaxTree.FastSpring.Api
                 byte[] bodyBytes = encoding.GetBytes(body);
 
 		        request.ContentLength = bodyBytes.Length;
-                request.GetRequestStream().Write(bodyBytes, 0, bodyBytes.Length);
+		        var requestStream = await request.GetRequestStreamAsync();
+		        requestStream.Write(bodyBytes, 0, bodyBytes.Length);
 		    }
 
 			return request;
