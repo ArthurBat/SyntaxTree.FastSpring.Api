@@ -8,6 +8,7 @@
     <owners>$author$</owners>
     <licenseUrl>https://raw.githubusercontent.com/syntaxtree/SyntaxTree.FastSpring.Api/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/syntaxtree/SyntaxTree.FastSpring.Api/</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/myget/SyntaxTree.FastSpring.Api/master/fastspring.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>FastSpring payments API client for .NET</description>
     <copyright>Copyright © SyntaxTree 2012</copyright>
