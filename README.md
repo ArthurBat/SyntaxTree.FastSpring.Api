@@ -13,7 +13,7 @@ namespace SyntaxTree.FastSpring.Api
 	{
 		public CompanyStore(StoreCredential credential) {}
 		
-		public Order GetOrder(string reference) {}
+		public async Task<Order> GetOrderAsync(string reference) {}
 	}
 
 	public sealed class StoreCredential
@@ -30,24 +30,15 @@ namespace SyntaxTree.FastSpring.Api
 Usage sample:
 
 ```csharp
-using SyntaxTree.FastSpring.Api;
+var store = new CompanyStore(
+	new StoreCredential(
+		company: "Microsoft",
+		username: "api-user",
+		password: "xxx"));
 
-public class Program
-{
-	public static void Main()
-	{
-		var store = new CompanyStore(
-			new StoreCredential(
-				company: "Microsoft",
-				username: "api-user",
-				password: "xxx"));
+var order = await store.GetOrderAsync(reference: "SYNXXXXXX-XXXX-XXXXX");
 
-		var order = store.GetOrder(reference: "SYNXXXXXX-XXXX-XXXXX");
-
-		Console.WriteLine(order.Customer.FirstName);
-	}
-}
+Console.WriteLine(order.Customer.FirstName);
 ```
 
-All calls made to the FastSpring server are currently made synchronous and blocking.
-Wrap your calls into a Task if you want them to to be asynchronous.
+All calls made to the FastSpring server are asynchronous.

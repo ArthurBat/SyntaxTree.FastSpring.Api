@@ -46,58 +46,58 @@ namespace SyntaxTree.FastSpring.Api
             }
         }
 
-		public async Task<Coupon> GenerateCoupon(string prefix)
+		public async Task<Coupon> GenerateCouponAsync(string prefix)
 		{
 			if (prefix == null)
 				throw new ArgumentNullException("prefix");
 			if (prefix.Length == 0)
 				throw new ArgumentException("Prefix is empty.", "prefix");
 
-			var request = await Request("POST", string.Concat("/coupon/", prefix, "/generate"));
+			var request = await RequestAsync("POST", string.Concat("/coupon/", prefix, "/generate"));
 			return DeserializeResponse<Coupon>(await request.GetResponseAsync());
 		}
 
-		public async Task<Order> GetOrder(string reference)
+		public async Task<Order> GetOrderAsync(string reference)
 		{
 			if (reference == null)
 				throw new ArgumentNullException("reference");
 			if (reference.Length == 0)
 				throw new ArgumentException("Reference is empty.", "reference");
 
-            var request = await Request("GET", "/order/" + reference);
+            var request = await RequestAsync("GET", "/order/" + reference);
             return DeserializeResponse<Order>(await request.GetResponseAsync());
 		}
 
-		public async Task<OrderSearchResult> GetOrders(string query)
+		public async Task<OrderSearchResult> GetOrdersAsync(string query)
 		{
 			if (query == null)
 				throw new ArgumentNullException("query");
 			if (query.Length == 0)
 				throw new ArgumentException("Query is empty.", "query");
 
-            var request = await Request("GET", "/orders/search?query=" + Uri.EscapeDataString(query));
+            var request = await RequestAsync("GET", "/orders/search?query=" + Uri.EscapeDataString(query));
             return DeserializeResponse<OrderSearchResult>(await request.GetResponseAsync());
 		}
 
-        public async Task<Subscription> GetSubscription(string reference)
+        public async Task<Subscription> GetSubscriptionAsync(string reference)
         {
             if (reference == null)
                 throw new ArgumentNullException("reference");
             if (reference.Length == 0)
                 throw new ArgumentException("Reference is empty.", "reference");
 
-            var request = await Request("GET", "/subscription/" + reference);
+            var request = await RequestAsync("GET", "/subscription/" + reference);
             return DeserializeResponse<Subscription>(await request.GetResponseAsync());
         }
 
-        public async Task UpdateSubscription(string reference, SubscriptionUpdate subscriptionUpdate)
+        public async Task UpdateSubscriptionAsync(string reference, SubscriptionUpdate subscriptionUpdate)
         {
             if (reference == null)
                 throw new ArgumentNullException("reference");
             if (reference.Length == 0)
                 throw new ArgumentException("Reference is empty.", "reference");
 
-            var request = await Request("PUT", "/subscription/" + reference, SerializeRequest(subscriptionUpdate));
+            var request = await RequestAsync("PUT", "/subscription/" + reference, SerializeRequest(subscriptionUpdate));
             try
             {
                 using (var response = (HttpWebResponse)await request.GetResponseAsync())
@@ -136,14 +136,14 @@ namespace SyntaxTree.FastSpring.Api
             }
         }
 
-        public async Task CancelSubscription(string reference)
+        public async Task CancelSubscriptionAsync(string reference)
         {
             if (reference == null)
                 throw new ArgumentNullException("reference");
             if (reference.Length == 0)
                 throw new ArgumentException("Reference is empty.", "reference");
 
-            var request = await Request("DELETE", "/subscription/" + reference);
+            var request = await RequestAsync("DELETE", "/subscription/" + reference);
             try
             {
                 using (var response = (HttpWebResponse)await request.GetResponseAsync())
@@ -166,7 +166,7 @@ namespace SyntaxTree.FastSpring.Api
             }
         }
 
-		private async Task<WebRequest> Request(string method, string uri, string body = null)
+		private async Task<WebRequest> RequestAsync(string method, string uri, string body = null)
 		{
 			var request = WebRequest.Create(StoreUri(uri));
 			request.ContentType = "application/xml";
