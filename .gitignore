@@ -10,3 +10,4 @@ obj
 *Resharper*
 test
 release/
+msbuild.log
