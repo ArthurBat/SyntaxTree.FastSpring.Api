@@ -102,7 +102,7 @@ namespace SyntaxTree.FastSpring.Api
             {
                 using (var response = (HttpWebResponse)await request.GetResponseAsync())
                 {
-                    if (!response.StatusCode.ToString().StartsWith("2"))
+                    if (!((int)response.StatusCode).ToString().StartsWith("2"))
                     {
                         throw new Exception(response.StatusDescription);
                     }
@@ -148,7 +148,7 @@ namespace SyntaxTree.FastSpring.Api
             {
                 using (var response = (HttpWebResponse)await request.GetResponseAsync())
                 {
-                    if (!response.StatusCode.ToString().StartsWith("2"))
+                    if (!((int)response.StatusCode).ToString().StartsWith("2"))
                     {
                         throw new Exception(response.StatusDescription);
                     }
